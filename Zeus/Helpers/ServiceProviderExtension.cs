@@ -1,4 +1,4 @@
-﻿using Gaia.Extensions;
+﻿using Gaia.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
