@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Gaia.Models;
 using Gaia.Services;
 using Microsoft.IdentityModel.Tokens;
 using Zeus.Models;
