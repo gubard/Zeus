@@ -44,7 +44,7 @@ public class JwtTokenFactory : ITokenFactory
             DateTime.UtcNow.AddDays(_options.RefreshExpiresDays)
         );
 
-        return new TokenResult
+        return new()
         {
             RefreshToken = refreshJwt,
             Token = jwt
@@ -73,7 +73,7 @@ public class JwtTokenFactory : ITokenFactory
             DateTime.UtcNow.AddDays(_options.RefreshExpiresDays)
         );
 
-        return new TokenResult
+        return new()
         {
             RefreshToken = refreshJwt,
             Token = jwt
