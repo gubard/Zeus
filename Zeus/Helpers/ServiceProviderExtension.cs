@@ -18,8 +18,8 @@ public static class ServiceProviderExtension
 
         public void CreateDbDirectory()
         {
-            var storage = serviceProvider.GetRequiredService<IStorageService>();
-            var dbDirectory = storage.GetDbDirectory();
+            var storageService = serviceProvider.GetRequiredService<IStorageService>();
+            var dbDirectory = storageService.GetDbDirectory();
 
             if (dbDirectory.Exists)
             {
@@ -29,11 +29,29 @@ public static class ServiceProviderExtension
             dbDirectory.Create();
         }
 
-        public async Task MigrateDbAsync()
+        public async Task MigrateDbAsync(string migrateFileName)
         {
+            var storageService = serviceProvider.GetRequiredService<IStorageService>();
+            var migrationFile = storageService.GetDbDirectory().ToFile(migrateFileName);
             using var scope = serviceProvider.CreateScope();
             await using var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var migrationName = context.Database.GetMigrations().Last();
+
+            if (!migrationFile.Exists)
+            {
+                await context.Database.MigrateAsync();
+                await migrationFile.WriteAllTextAsync(migrationName);
+            }
+
+            var currentMigration = await migrationFile.ReadAllTextAsync();
+
+            if (currentMigration == migrationName)
+            {
+                return;
+            }
+
             await context.Database.MigrateAsync();
+            await migrationFile.WriteAllTextAsync(migrationName);
         }
     }
 }
