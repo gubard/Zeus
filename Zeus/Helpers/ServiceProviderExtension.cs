@@ -29,7 +29,7 @@ public static class ServiceProviderExtension
             dbDirectory.Create();
         }
 
-        public async Task MigrateDbAsync(string migrateFileName)
+        public async Task MigrateDbAsync(string migrateFileName, CancellationToken ct)
         {
             var storageService = serviceProvider.GetRequiredService<IStorageService>();
             var migrationFile = storageService.GetDbDirectory().ToFile(migrateFileName);
@@ -39,19 +39,19 @@ public static class ServiceProviderExtension
 
             if (!migrationFile.Exists)
             {
-                await context.Database.MigrateAsync();
-                await migrationFile.WriteAllTextAsync(migrationName);
+                await context.Database.MigrateAsync(ct);
+                await migrationFile.WriteAllTextAsync(migrationName, ct);
             }
 
-            var currentMigration = await migrationFile.ReadAllTextAsync();
+            var currentMigration = await migrationFile.ReadAllTextAsync(ct);
 
             if (currentMigration == migrationName)
             {
                 return;
             }
 
-            await context.Database.MigrateAsync();
-            await migrationFile.WriteAllTextAsync(migrationName);
+            await context.Database.MigrateAsync(ct);
+            await migrationFile.WriteAllTextAsync(migrationName, ct);
         }
     }
 }

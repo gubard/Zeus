@@ -1,0 +1,78 @@
+using System.Security.Claims;
+using Gaia.Helpers;
+using Gaia.Models;
+using Gaia.Services;
+using Microsoft.AspNetCore.Http;
+using Zeus.Models;
+
+namespace Zeus.Helpers;
+
+public static class HttpContextExtension
+{
+    extension(HttpContext httpContext)
+    {
+        public Claim GetClaim(string type)
+        {
+            return httpContext.User.Claims.GetClaim(type);
+        }
+
+        public Claim GetNameIdentifierClaim()
+        {
+            return httpContext.GetClaim(ClaimTypes.NameIdentifier);
+        }
+
+        public Claim GetNameClaim()
+        {
+            return httpContext.GetClaim(ClaimTypes.Name);
+        }
+
+        public Claim GetRoleClaim()
+        {
+            return httpContext.GetClaim(ClaimTypes.Role);
+        }
+
+        public string GetTimeZoneOffsetHeader()
+        {
+            return httpContext.GetHeader(HttpHeader.TimeZoneOffset);
+        }
+
+        public string GetAuthorizationHeader()
+        {
+            return httpContext.GetHeader(HttpHeader.Authorization);
+        }
+
+        public TimeSpan GetTimeZoneOffset()
+        {
+            return TimeSpan.Parse(httpContext.GetTimeZoneOffsetHeader());
+        }
+
+        public string GetHeader(string name)
+        {
+            return httpContext.Request.Headers[name].Single().ThrowIfNull();
+        }
+
+        public string GetUserId()
+        {
+            var role = httpContext.GetRoleClaim().Value.ParseEnum<Role>();
+
+            switch (role)
+            {
+                case Role.User:
+                {
+                    var nameIdentifier = httpContext.GetNameIdentifierClaim();
+
+                    return nameIdentifier.Value;
+                }
+                case Role.Service:
+                {
+                    var nameIdentifier = httpContext.Request.Headers[HttpHeader.UserId].Single().ThrowIfNull();
+
+                    return nameIdentifier;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
+
+}
