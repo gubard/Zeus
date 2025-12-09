@@ -11,6 +11,11 @@ public static class HttpContextExtension
 {
     extension(HttpContext httpContext)
     {
+        public GaiaValues GetRequestValues()
+        {
+            return new(httpContext.GetTimeZoneOffset());
+        }
+        
         public Claim GetClaim(string type)
         {
             return httpContext.User.Claims.GetClaim(type);
@@ -31,22 +36,22 @@ public static class HttpContextExtension
             return httpContext.GetClaim(ClaimTypes.Role);
         }
 
-        public string GetTimeZoneOffsetHeader()
+        public string GetTimeZoneOffsetRequestHeader()
         {
-            return httpContext.GetHeader(HttpHeader.TimeZoneOffset);
+            return httpContext.GetRequestHeader(HttpHeader.TimeZoneOffset);
         }
 
-        public string GetAuthorizationHeader()
+        public string GetAuthorizationRequestHeader()
         {
-            return httpContext.GetHeader(HttpHeader.Authorization);
+            return httpContext.GetRequestHeader(HttpHeader.Authorization);
         }
 
         public TimeSpan GetTimeZoneOffset()
         {
-            return TimeSpan.Parse(httpContext.GetTimeZoneOffsetHeader());
+            return TimeSpan.Parse(httpContext.GetTimeZoneOffsetRequestHeader());
         }
 
-        public string GetHeader(string name)
+        public string GetRequestHeader(string name)
         {
             return httpContext.Request.Headers[name].Single().ThrowIfNull();
         }
