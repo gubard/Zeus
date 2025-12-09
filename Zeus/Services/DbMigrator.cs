@@ -53,7 +53,7 @@ public class DbMigrator : IDbMigrator
         await migrationFile.WriteAllTextAsync(migrationId, ct);
     }
 
-    private string GetMigrationId()
+    private static string GetMigrationId()
     {
         return AppDomain.CurrentDomain
            .GetAssemblies()
