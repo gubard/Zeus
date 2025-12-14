@@ -13,9 +13,9 @@ public static class HttpContextExtension
     {
         public GaiaValues GetRequestValues()
         {
-            return new(httpContext.GetTimeZoneOffset());
+            return new(httpContext.GetTimeZoneOffset(), Guid.Parse(httpContext.GetUserId()));
         }
-        
+
         public Claim GetClaim(string type)
         {
             return httpContext.User.Claims.GetClaim(type);
@@ -74,8 +74,7 @@ public static class HttpContextExtension
 
                     return nameIdentifier;
                 }
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: throw new ArgumentOutOfRangeException(nameof(role), role, null);
             }
         }
     }
