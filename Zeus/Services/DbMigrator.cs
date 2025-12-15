@@ -45,7 +45,12 @@ public class DbMigrator : IDbMigrator
 
         foreach (var file in files)
         {
-            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source={file}", x => x.MigrationsAssembly(typeof(SqliteNestorDbContext).Assembly)).Options;
+            var options = new DbContextOptionsBuilder()
+                .UseSqlite(
+                    $"Data Source={file}",
+                    x => x.MigrationsAssembly(typeof(SqliteNestorDbContext).Assembly)
+                )
+                .Options;
             await using var context = new SqliteNestorDbContext(options);
             await context.Database.MigrateAsync(ct);
         }
@@ -55,26 +60,24 @@ public class DbMigrator : IDbMigrator
 
     private static string GetMigrationId()
     {
-        return AppDomain.CurrentDomain
-           .GetAssemblies()
-           .SelectMany(x => x.GetTypes())
-           .Where(
-                x =>
+        return AppDomain
+            .CurrentDomain.GetAssemblies()
+            .SelectMany(x => x.GetTypes())
+            .Where(x =>
+            {
+                var dbContextAttribute = x.GetCustomAttribute<DbContextAttribute>();
+
+                if (dbContextAttribute is null)
                 {
-                    var dbContextAttribute = x.GetCustomAttribute<DbContextAttribute>();
-
-                    if (dbContextAttribute is null)
-                    {
-                        return false;
-                    }
-
-                    return dbContextAttribute.ContextType == typeof(SqliteNestorDbContext);
+                    return false;
                 }
-            )
-           .Select(x => x.GetCustomAttribute<MigrationAttribute>())
-           .Where(x => x is not null)
-           .Select(x => x.ThrowIfNull().Id)
-           .OrderByDescending(x => x)
-           .First();
+
+                return dbContextAttribute.ContextType == typeof(SqliteNestorDbContext);
+            })
+            .Select(x => x.GetCustomAttribute<MigrationAttribute>())
+            .Where(x => x is not null)
+            .Select(x => x.ThrowIfNull().Id)
+            .OrderByDescending(x => x)
+            .First();
     }
 }

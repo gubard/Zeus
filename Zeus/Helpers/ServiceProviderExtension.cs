@@ -13,7 +13,9 @@ public static class ServiceProviderExtension
     {
         public T GetConfigurationSection<T>(string path)
         {
-            return serviceProvider.GetRequiredService<IConfiguration>().GetConfigurationSection<T>(path);
+            return serviceProvider
+                .GetRequiredService<IConfiguration>()
+                .GetConfigurationSection<T>(path);
         }
 
         public void CreateDbDirectory()

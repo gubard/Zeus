@@ -70,13 +70,16 @@ public static class HttpContextExtension
                 }
                 case Role.Service:
                 {
-                    var nameIdentifier = httpContext.Request.Headers[HttpHeader.UserId].Single().ThrowIfNull();
+                    var nameIdentifier = httpContext
+                        .Request.Headers[HttpHeader.UserId]
+                        .Single()
+                        .ThrowIfNull();
 
                     return nameIdentifier;
                 }
-                default: throw new ArgumentOutOfRangeException(nameof(role), role, null);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(role), role, null);
             }
         }
     }
-
 }

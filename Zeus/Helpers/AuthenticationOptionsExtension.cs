@@ -22,7 +22,10 @@ public static class AuthenticationOptionsExtension
 
 public static class JwtBearerOptionsExtension
 {
-    public static JwtBearerOptions SetJwtOptions(this JwtBearerOptions options, IConfiguration configuration)
+    public static JwtBearerOptions SetJwtOptions(
+        this JwtBearerOptions options,
+        IConfiguration configuration
+    )
     {
         var jwtOptions = configuration.GetConfigurationSection<JwtOptions>("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtOptions.Key.ThrowIfNull());

@@ -9,12 +9,15 @@ namespace Zeus.Helpers;
 
 public static class WebApplicationExtension
 {
-    public static async ValueTask RunZeusApp<TServiceInterface,
+    public static async ValueTask RunZeusApp<
+        TServiceInterface,
         TGetRequest,
         TPostRequest,
-        TGetResponse, TPostResponse>(this WebApplication app)
-        where TServiceInterface : class, IService<TGetRequest, TPostRequest,
-            TGetResponse, TPostResponse>
+        TGetResponse,
+        TPostResponse
+    >(this WebApplication app)
+        where TServiceInterface : class,
+            IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
         where TGetResponse : IValidationErrors, new()
         where TPostResponse : IValidationErrors, new()
     {
@@ -27,24 +30,29 @@ public static class WebApplicationExtension
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapPost(RouteHelper.Get,
-                (TGetRequest request,
-                        TServiceInterface authenticationService,
-                        CancellationToken ct) =>
-                    authenticationService.GetAsync(request, ct))
-           .RequireAuthorization()
-           .WithName(RouteHelper.GetName);
+        app.MapPost(
+                RouteHelper.Get,
+                (
+                    TGetRequest request,
+                    TServiceInterface authenticationService,
+                    CancellationToken ct
+                ) => authenticationService.GetAsync(request, ct)
+            )
+            .RequireAuthorization()
+            .WithName(RouteHelper.GetName);
 
-        app.MapPost(RouteHelper.Post,
-                (TPostRequest request,
-                        TServiceInterface authenticationService,
-                        CancellationToken ct) =>
-                    authenticationService.PostAsync(request, ct))
-           .RequireAuthorization()
-           .WithName(RouteHelper.PostName);
+        app.MapPost(
+                RouteHelper.Post,
+                (
+                    TPostRequest request,
+                    TServiceInterface authenticationService,
+                    CancellationToken ct
+                ) => authenticationService.PostAsync(request, ct)
+            )
+            .RequireAuthorization()
+            .WithName(RouteHelper.PostName);
 
-        await app.Services.GetRequiredService<IDbMigrator>()
-           .MigrateAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<IDbMigrator>().MigrateAsync(CancellationToken.None);
         await app.RunAsync();
     }
 }
