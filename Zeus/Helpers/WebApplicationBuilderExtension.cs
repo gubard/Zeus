@@ -69,7 +69,7 @@ public static class WebApplicationBuilderExtension
                     .GetRequestValues()
             );
             builder.Services.AddJwtAuthentication(builder.Configuration);
-            builder.Services.AddTransient<IStorageService, StorageService>();
+            builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
             builder.Services.AddTransient<TServiceInterface, TService>();
             builder.Services.AddTransient<IDbMigrator, DbMigrator>(sp =>
                 new(sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name))
