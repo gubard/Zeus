@@ -52,7 +52,7 @@ public static class WebApplicationExtension
             .RequireAuthorization()
             .WithName(RouteHelper.PostName);
 
-        await app.Services.GetRequiredService<IDbMigrator>().MigrateAsync(CancellationToken.None);
+        await app.Services.GetRequiredService<IZeusMigrator>().MigrateAsync(CancellationToken.None);
         await app.RunAsync();
     }
 }

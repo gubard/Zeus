@@ -1,24 +1,23 @@
-﻿using System.Reflection;
-using Gaia.Helpers;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore;
+using Nestor.Db.Services;
 using Nestor.Db.Sqlite;
 
 namespace Zeus.Services;
 
-public interface IDbMigrator
+public interface IZeusMigrator
 {
     ValueTask MigrateAsync(CancellationToken ct);
 }
 
-public class DbMigrator : IDbMigrator
+public class ZeusMigrator : IZeusMigrator
 {
     private readonly DirectoryInfo _dbsDirectory;
+    private readonly IMigrator _migrator;
 
-    public DbMigrator(DirectoryInfo dbsDirectory)
+    public ZeusMigrator(DirectoryInfo dbsDirectory, IMigrator migrator)
     {
         _dbsDirectory = dbsDirectory;
+        _migrator = migrator;
     }
 
     public async ValueTask MigrateAsync(CancellationToken ct)
@@ -28,56 +27,13 @@ public class DbMigrator : IDbMigrator
             _dbsDirectory.Create();
         }
 
-        var migrationId = GetMigrationId();
-        var migrationFile = _dbsDirectory.ToFile(".migration");
-
-        if (!migrationFile.Exists)
-        {
-            await using var stream = migrationFile.Create();
-        }
-
-        if (migrationId == await migrationFile.ReadAllTextAsync(ct))
-        {
-            return;
-        }
-
         var files = _dbsDirectory.GetFiles("*.db");
 
         foreach (var file in files)
         {
-            var options = new DbContextOptionsBuilder()
-                .UseSqlite(
-                    $"Data Source={file}",
-                    x => x.MigrationsAssembly(typeof(SqliteNestorDbContext).Assembly)
-                )
-                .Options;
+            var options = new DbContextOptionsBuilder().UseSqlite($"Data Source={file}").Options;
             await using var context = new SqliteNestorDbContext(options);
-            await context.Database.MigrateAsync(ct);
+            await _migrator.MigrateAsync(context, ct);
         }
-
-        await migrationFile.WriteAllTextAsync(migrationId, ct);
-    }
-
-    private static string GetMigrationId()
-    {
-        return AppDomain
-            .CurrentDomain.GetAssemblies()
-            .SelectMany(x => x.GetTypes())
-            .Where(x =>
-            {
-                var dbContextAttribute = x.GetCustomAttribute<DbContextAttribute>();
-
-                if (dbContextAttribute is null)
-                {
-                    return false;
-                }
-
-                return dbContextAttribute.ContextType == typeof(SqliteNestorDbContext);
-            })
-            .Select(x => x.GetCustomAttribute<MigrationAttribute>())
-            .Where(x => x is not null)
-            .Select(x => x.ThrowIfNull().Id)
-            .OrderByDescending(x => x)
-            .First();
     }
 }

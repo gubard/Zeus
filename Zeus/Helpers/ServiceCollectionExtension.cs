@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nestor.Db.Services;
 using Nestor.Db.Sqlite;
 
 namespace Zeus.Helpers;
@@ -28,14 +29,13 @@ public static class ServiceCollectionExtension
                 {
                     var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
                     var userId = httpContextAccessor.HttpContext.ThrowIfNull().GetUserId();
+
                     var dataSourceFile = sp.GetRequiredService<IStorageService>()
                         .GetDbDirectory()
                         .Combine(name)
                         .ToFile($"{userId}.db");
-                    options.UseSqlite(
-                        $"Data Source={dataSourceFile}",
-                        x => x.MigrationsAssembly(typeof(SqliteNestorDbContext).Assembly)
-                    );
+
+                    options.UseSqlite($"Data Source={dataSourceFile}");
 
                     if (dataSourceFile.Exists)
                     {
@@ -48,7 +48,7 @@ public static class ServiceCollectionExtension
                     }
 
                     using var context = new SqliteNestorDbContext(options.Options);
-                    context.Database.Migrate();
+                    sp.GetRequiredService<IMigrator>().Migrate(context);
                 }
             );
         }

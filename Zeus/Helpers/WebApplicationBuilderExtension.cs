@@ -4,6 +4,9 @@ using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Nestor.Db.Services;
+using Nestor.Db.Sqlite.Helpers;
 using Zeus.Services;
 
 namespace Zeus.Helpers;
@@ -71,8 +74,12 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
             builder.Services.AddTransient<TServiceInterface, TService>();
-            builder.Services.AddTransient<IDbMigrator, DbMigrator>(sp =>
-                new(sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name))
+            builder.Services.AddTransient<IMigrator>(_ => new Migrator(SqliteMigration.Migrations));
+            builder.Services.AddTransient<IZeusMigrator, ZeusMigrator>(sp =>
+                new(
+                    sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name),
+                    sp.GetRequiredService<IMigrator>()
+                )
             );
             builder.Services.AddZeusDbContext(name);
 
