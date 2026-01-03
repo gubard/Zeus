@@ -1,5 +1,4 @@
-﻿using Gaia.Helpers;
-using Gaia.Services;
+﻿using Gaia.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
