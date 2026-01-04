@@ -10,7 +10,7 @@ public interface IZeusMigrator
 }
 
 public class ZeusMigrator<TFactory> : IZeusMigrator
-    where TFactory : IStaticFactory<DbContextOptions, DbContext>
+    where TFactory : IStaticFactory<DbContextOptions, NestorDbContext>
 {
     private readonly DirectoryInfo _dbsDirectory;
     private readonly IMigrator _migrator;

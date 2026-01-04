@@ -22,9 +22,9 @@ public static class ServiceCollectionExtension
         }
 
         public IServiceCollection AddZeusDbContext<TDbContext>(string name)
-            where TDbContext : IStaticFactory<DbContextOptions, DbContext>
+            where TDbContext : NestorDbContext, IStaticFactory<DbContextOptions, NestorDbContext>
         {
-            return serviceCollection.AddDbContext<DbContext>(
+            return serviceCollection.AddDbContext<NestorDbContext, TDbContext>(
                 (sp, options) =>
                 {
                     var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();

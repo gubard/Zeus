@@ -29,7 +29,7 @@ public static class WebApplicationBuilderExtension
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
-            where TDbContext : IStaticFactory<DbContextOptions, DbContext>
+            where TDbContext : NestorDbContext, IStaticFactory<DbContextOptions, NestorDbContext>
         {
             builder.AddServicesZeus<
                 TServiceInterface,
@@ -66,7 +66,7 @@ public static class WebApplicationBuilderExtension
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
-            where TDbContext : IStaticFactory<DbContextOptions, DbContext>
+            where TDbContext : NestorDbContext, IStaticFactory<DbContextOptions, NestorDbContext>
         {
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();

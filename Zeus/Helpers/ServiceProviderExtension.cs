@@ -1,5 +1,4 @@
 ﻿using Gaia.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Services;
@@ -35,7 +34,7 @@ public static class ServiceProviderExtension
         {
             var migrator = serviceProvider.GetRequiredService<IMigrator>();
             using var scope = serviceProvider.CreateScope();
-            await using var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+            await using var context = scope.ServiceProvider.GetRequiredService<NestorDbContext>();
             await migrator.MigrateAsync(context, ct);
         }
     }
