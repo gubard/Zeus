@@ -1,4 +1,5 @@
-﻿using Gaia.Services;
+﻿using System.Runtime.CompilerServices;
+using Gaia.Services;
 using Microsoft.EntityFrameworkCore;
 using Nestor.Db.Services;
 
@@ -6,7 +7,7 @@ namespace Zeus.Services;
 
 public interface IZeusMigrator
 {
-    ValueTask MigrateAsync(CancellationToken ct);
+    ConfiguredValueTaskAwaitable MigrateAsync(CancellationToken ct);
 }
 
 public class ZeusMigrator<TFactory> : IZeusMigrator
@@ -21,7 +22,12 @@ public class ZeusMigrator<TFactory> : IZeusMigrator
         _migrator = migrator;
     }
 
-    public async ValueTask MigrateAsync(CancellationToken ct)
+    public ConfiguredValueTaskAwaitable MigrateAsync(CancellationToken ct)
+    {
+        return MigrateCore(ct).ConfigureAwait(false);
+    }
+
+    private async ValueTask MigrateCore(CancellationToken ct)
     {
         if (!_dbsDirectory.Exists)
         {

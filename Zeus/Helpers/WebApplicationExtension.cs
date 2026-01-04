@@ -32,22 +32,22 @@ public static class WebApplicationExtension
 
         app.MapPost(
                 RouteHelper.Get,
-                (
+                async (
                     TGetRequest request,
                     TServiceInterface authenticationService,
                     CancellationToken ct
-                ) => authenticationService.GetAsync(request, ct)
+                ) => await authenticationService.GetAsync(request, ct)
             )
             .RequireAuthorization()
             .WithName(RouteHelper.GetName);
 
         app.MapPost(
                 RouteHelper.Post,
-                (
+                async (
                     TPostRequest request,
                     TServiceInterface authenticationService,
                     CancellationToken ct
-                ) => authenticationService.PostAsync(request, ct)
+                ) => await authenticationService.PostAsync(request, ct)
             )
             .RequireAuthorization()
             .WithName(RouteHelper.PostName);
