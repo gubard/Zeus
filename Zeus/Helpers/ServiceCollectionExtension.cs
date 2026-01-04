@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Services;
-using Nestor.Db.Sqlite;
 
 namespace Zeus.Helpers;
 
@@ -22,9 +21,10 @@ public static class ServiceCollectionExtension
             return serviceCollection;
         }
 
-        public IServiceCollection AddZeusDbContext(string name)
+        public IServiceCollection AddZeusDbContext<TDbContext>(string name)
+            where TDbContext : IStaticFactory<DbContextOptions, DbContext>
         {
-            return serviceCollection.AddDbContext<DbContext, SqliteNestorDbContext>(
+            return serviceCollection.AddDbContext<DbContext>(
                 (sp, options) =>
                 {
                     var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
@@ -47,7 +47,7 @@ public static class ServiceCollectionExtension
                         dataSourceFile.Directory?.Create();
                     }
 
-                    using var context = new SqliteNestorDbContext(options.Options);
+                    using var context = TDbContext.Create(options.Options);
                     sp.GetRequiredService<IMigrator>().Migrate(context);
                 }
             );

@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Gaia.Services;
+using Microsoft.EntityFrameworkCore;
 using Nestor.Db.Services;
-using Nestor.Db.Sqlite;
 
 namespace Zeus.Services;
 
@@ -9,7 +9,8 @@ public interface IZeusMigrator
     ValueTask MigrateAsync(CancellationToken ct);
 }
 
-public class ZeusMigrator : IZeusMigrator
+public class ZeusMigrator<TFactory> : IZeusMigrator
+    where TFactory : IStaticFactory<DbContextOptions, DbContext>
 {
     private readonly DirectoryInfo _dbsDirectory;
     private readonly IMigrator _migrator;
@@ -32,7 +33,7 @@ public class ZeusMigrator : IZeusMigrator
         foreach (var file in files)
         {
             var options = new DbContextOptionsBuilder().UseSqlite($"Data Source={file}").Options;
-            await using var context = new SqliteNestorDbContext(options);
+            await using var context = TFactory.Create(options);
             await _migrator.MigrateAsync(context, ct);
         }
     }

@@ -3,6 +3,7 @@ using Gaia.Models;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Services;
 using Nestor.Db.Sqlite.Helpers;
@@ -20,13 +21,15 @@ public static class WebApplicationBuilderExtension
             TGetRequest,
             TPostRequest,
             TGetResponse,
-            TPostResponse
+            TPostResponse,
+            TDbContext
         >(string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
+            where TDbContext : IStaticFactory<DbContextOptions, DbContext>
         {
             builder.AddServicesZeus<
                 TServiceInterface,
@@ -34,7 +37,8 @@ public static class WebApplicationBuilderExtension
                 TGetRequest,
                 TPostRequest,
                 TGetResponse,
-                TPostResponse
+                TPostResponse,
+                TDbContext
             >(name);
 
             var app = builder.Build();
@@ -54,13 +58,15 @@ public static class WebApplicationBuilderExtension
             TGetRequest,
             TPostRequest,
             TGetResponse,
-            TPostResponse
+            TPostResponse,
+            TDbContext
         >(string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
+            where TDbContext : IStaticFactory<DbContextOptions, DbContext>
         {
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
@@ -74,13 +80,13 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
             builder.Services.AddTransient<TServiceInterface, TService>();
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(SqliteMigration.Migrations));
-            builder.Services.AddTransient<IZeusMigrator, ZeusMigrator>(sp =>
+            builder.Services.AddTransient<IZeusMigrator, ZeusMigrator<TDbContext>>(sp =>
                 new(
                     sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name),
                     sp.GetRequiredService<IMigrator>()
                 )
             );
-            builder.Services.AddZeusDbContext(name);
+            builder.Services.AddZeusDbContext<TDbContext>(name);
 
             return builder;
         }
