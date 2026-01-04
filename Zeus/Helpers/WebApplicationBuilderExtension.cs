@@ -1,4 +1,5 @@
-﻿using Gaia.Helpers;
+﻿using System.Collections.Frozen;
+using Gaia.Helpers;
 using Gaia.Models;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Services;
-using Nestor.Db.Sqlite.Helpers;
 using Zeus.Services;
 
 namespace Zeus.Helpers;
@@ -23,7 +23,7 @@ public static class WebApplicationBuilderExtension
             TGetResponse,
             TPostResponse,
             TDbContext
-        >(string name)
+        >(FrozenDictionary<long, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
@@ -39,7 +39,7 @@ public static class WebApplicationBuilderExtension
                 TGetResponse,
                 TPostResponse,
                 TDbContext
-            >(name);
+            >(migrations, name);
 
             var app = builder.Build();
 
@@ -60,7 +60,7 @@ public static class WebApplicationBuilderExtension
             TGetResponse,
             TPostResponse,
             TDbContext
-        >(string name)
+        >(FrozenDictionary<long, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
@@ -79,7 +79,7 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
             builder.Services.AddTransient<TServiceInterface, TService>();
-            builder.Services.AddTransient<IMigrator>(_ => new Migrator(SqliteMigration.Migrations));
+            builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
             builder.Services.AddTransient<IZeusMigrator, ZeusMigrator<TDbContext>>(sp =>
                 new(
                     sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name),
