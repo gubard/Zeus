@@ -23,7 +23,7 @@ public static class WebApplicationBuilderExtension
             TGetResponse,
             TPostResponse,
             TDbContext
-        >(FrozenDictionary<long, string> migrations, string name)
+        >(FrozenDictionary<int, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
@@ -60,7 +60,7 @@ public static class WebApplicationBuilderExtension
             TGetResponse,
             TPostResponse,
             TDbContext
-        >(FrozenDictionary<long, string> migrations, string name)
+        >(FrozenDictionary<int, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
