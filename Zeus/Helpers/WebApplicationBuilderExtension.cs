@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Services;
+using Nestor.Db.Sqlite.Services;
 using Zeus.Services;
 
 namespace Zeus.Helpers;

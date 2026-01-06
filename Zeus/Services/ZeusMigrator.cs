@@ -2,6 +2,7 @@
 using Gaia.Services;
 using Microsoft.EntityFrameworkCore;
 using Nestor.Db.Services;
+using Nestor.Db.Sqlite.Services;
 
 namespace Zeus.Services;
 
