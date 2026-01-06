@@ -31,11 +31,12 @@ public static class ServiceProviderExtension
             dbDirectory.Create();
         }
 
-        public async Task MigrateDbAsync(CancellationToken ct)
+        public async Task MigrateDbAsync<TDbContext>(CancellationToken ct)
+            where TDbContext : NestorDbContext
         {
             var migrator = serviceProvider.GetRequiredService<IMigrator>();
             using var scope = serviceProvider.CreateScope();
-            await using var context = scope.ServiceProvider.GetRequiredService<NestorDbContext>();
+            await using var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
             await migrator.MigrateAsync(context, ct);
         }
     }

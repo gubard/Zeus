@@ -41,6 +41,11 @@ public static class HttpContextExtension
             return httpContext.GetRequestHeader(HttpHeader.TimeZoneOffset);
         }
 
+        public string GetIdempotentIdHeader()
+        {
+            return httpContext.GetRequestHeader(HttpHeader.IdempotentId);
+        }
+
         public string GetAuthorizationRequestHeader()
         {
             return httpContext.GetRequestHeader(HttpHeader.Authorization);
@@ -54,6 +59,11 @@ public static class HttpContextExtension
         public string GetRequestHeader(string name)
         {
             return httpContext.Request.Headers[name].Single().ThrowIfNull();
+        }
+
+        public Guid GetIdempotentId()
+        {
+            return Guid.Parse(httpContext.GetIdempotentIdHeader());
         }
 
         public string GetUserId()

@@ -1,6 +1,7 @@
 ﻿using Gaia.Helpers;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Zeus.Services;
@@ -46,8 +47,14 @@ public static class WebApplicationExtension
                 async (
                     TPostRequest request,
                     TServiceInterface authenticationService,
+                    IHttpContextAccessor accessor,
                     CancellationToken ct
-                ) => await authenticationService.PostAsync(request, ct)
+                ) =>
+                    await authenticationService.PostAsync(
+                        accessor.HttpContext.ThrowIfNull().GetIdempotentId(),
+                        request,
+                        ct
+                    )
             )
             .RequireAuthorization()
             .WithName(RouteHelper.PostName);

@@ -72,21 +72,25 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
+
             builder.Services.AddScoped<GaiaValues>(sp =>
                 sp.GetRequiredService<IHttpContextAccessor>()
                     .HttpContext.ThrowIfNull()
                     .GetRequestValues()
             );
+
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
             builder.Services.AddTransient<TServiceInterface, TService>();
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
+
             builder.Services.AddTransient<IZeusMigrator, ZeusMigrator<TDbContext>>(sp =>
                 new(
                     sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name),
                     sp.GetRequiredService<IMigrator>()
                 )
             );
+
             builder.Services.AddZeusDbContext<TDbContext>(name);
 
             return builder;
