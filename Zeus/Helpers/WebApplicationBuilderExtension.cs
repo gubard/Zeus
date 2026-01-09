@@ -4,10 +4,8 @@ using Gaia.Models;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Services;
-using Nestor.Db.Sqlite.Services;
 using Zeus.Services;
 
 namespace Zeus.Helpers;
@@ -22,15 +20,13 @@ public static class WebApplicationBuilderExtension
             TGetRequest,
             TPostRequest,
             TGetResponse,
-            TPostResponse,
-            TDbContext
+            TPostResponse
         >(FrozenDictionary<int, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
-            where TDbContext : NestorDbContext, IStaticFactory<DbContextOptions, NestorDbContext>
         {
             builder.AddServicesZeus<
                 TServiceInterface,
@@ -38,8 +34,7 @@ public static class WebApplicationBuilderExtension
                 TGetRequest,
                 TPostRequest,
                 TGetResponse,
-                TPostResponse,
-                TDbContext
+                TPostResponse
             >(migrations, name);
 
             var app = builder.Build();
@@ -59,15 +54,13 @@ public static class WebApplicationBuilderExtension
             TGetRequest,
             TPostRequest,
             TGetResponse,
-            TPostResponse,
-            TDbContext
+            TPostResponse
         >(FrozenDictionary<int, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
-            where TDbContext : NestorDbContext, IStaticFactory<DbContextOptions, NestorDbContext>
         {
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
@@ -84,14 +77,14 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddTransient<TServiceInterface, TService>();
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
 
-            builder.Services.AddTransient<IZeusMigrator, ZeusMigrator<TDbContext>>(sp =>
+            builder.Services.AddTransient<IZeusMigrator, ZeusMigrator>(sp =>
                 new(
                     sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name),
                     sp.GetRequiredService<IMigrator>()
                 )
             );
 
-            builder.Services.AddZeusDbContext<TDbContext>(name);
+            builder.Services.AddZeusDb(name);
 
             return builder;
         }

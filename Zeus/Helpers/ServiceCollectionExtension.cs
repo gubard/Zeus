@@ -1,11 +1,10 @@
 ﻿using Gaia.Helpers;
 using Gaia.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nestor.Db.Models;
 using Nestor.Db.Services;
-using Nestor.Db.Sqlite.Services;
 
 namespace Zeus.Helpers;
 
@@ -22,36 +21,36 @@ public static class ServiceCollectionExtension
             return serviceCollection;
         }
 
-        public IServiceCollection AddZeusDbContext<TDbContext>(string name)
-            where TDbContext : NestorDbContext, IStaticFactory<DbContextOptions, NestorDbContext>
+        public IServiceCollection AddZeusDb(string name)
         {
-            return serviceCollection.AddDbContext<NestorDbContext, TDbContext>(
-                (sp, options) =>
+            return serviceCollection.AddScoped<IDbConnectionFactory>(sp =>
+            {
+                var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                var userId = httpContextAccessor.HttpContext.ThrowIfNull().GetUserId();
+
+                var dataSourceFile = sp.GetRequiredService<IStorageService>()
+                    .GetDbDirectory()
+                    .Combine(name)
+                    .ToFile($"{userId}.db");
+
+                var factory = new SqliteDbConnectionFactory(
+                    new() { DataSource = dataSourceFile.FullName }
+                );
+
+                if (dataSourceFile.Exists)
                 {
-                    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-                    var userId = httpContextAccessor.HttpContext.ThrowIfNull().GetUserId();
-
-                    var dataSourceFile = sp.GetRequiredService<IStorageService>()
-                        .GetDbDirectory()
-                        .Combine(name)
-                        .ToFile($"{userId}.db");
-
-                    options.UseSqlite($"Data Source={dataSourceFile}");
-
-                    if (dataSourceFile.Exists)
-                    {
-                        return;
-                    }
-
-                    if (dataSourceFile.Directory?.Exists != true)
-                    {
-                        dataSourceFile.Directory?.Create();
-                    }
-
-                    using var context = TDbContext.Create(options.Options);
-                    sp.GetRequiredService<IMigrator>().Migrate(context);
+                    return factory;
                 }
-            );
+
+                if (dataSourceFile.Directory?.Exists != true)
+                {
+                    dataSourceFile.Directory?.Create();
+                }
+
+                sp.GetRequiredService<IMigrator>().Migrate(factory);
+
+                return factory;
+            });
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Gaia.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nestor.Db.Models;
 using Nestor.Db.Services;
-using Nestor.Db.Sqlite.Services;
 using IServiceProvider = System.IServiceProvider;
 
 namespace Zeus.Helpers;
@@ -31,13 +31,12 @@ public static class ServiceProviderExtension
             dbDirectory.Create();
         }
 
-        public async Task MigrateDbAsync<TDbContext>(CancellationToken ct)
-            where TDbContext : NestorDbContext
+        public async Task MigrateDbAsync(CancellationToken ct)
         {
             var migrator = serviceProvider.GetRequiredService<IMigrator>();
             using var scope = serviceProvider.CreateScope();
-            await using var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
-            await migrator.MigrateAsync(context, ct);
+            var factory = scope.ServiceProvider.GetRequiredService<IDbConnectionFactory>();
+            await migrator.MigrateAsync(factory, ct);
         }
     }
 }
