@@ -33,9 +33,7 @@ public static class ServiceCollectionExtension
                     .Combine(name)
                     .ToFile($"{userId}.db");
 
-                var factory = new SqliteDbConnectionFactory(
-                    new() { DataSource = dataSourceFile.FullName }
-                );
+                var factory = new SqliteDbConnectionFactory(dataSourceFile);
 
                 if (dataSourceFile.Exists)
                 {

@@ -36,7 +36,7 @@ public class ZeusMigrator : IZeusMigrator
 
         foreach (var file in files)
         {
-            var factory = new SqliteDbConnectionFactory(new() { DataSource = file.FullName });
+            var factory = new SqliteDbConnectionFactory(file);
             await _migrator.MigrateAsync(factory, ct);
         }
     }
