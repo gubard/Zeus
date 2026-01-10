@@ -5,6 +5,7 @@ using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Nestor.Db.Models;
 using Nestor.Db.Services;
 using Zeus.Services;
 
@@ -65,6 +66,11 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
+            builder.Services.AddTransient<TServiceInterface, TService>();
+            builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
+            builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddZeusDb(name);
 
             builder.Services.AddScoped<GaiaValues>(sp =>
                 sp.GetRequiredService<IHttpContextAccessor>()
@@ -72,10 +78,9 @@ public static class WebApplicationBuilderExtension
                     .GetRequestValues()
             );
 
-            builder.Services.AddJwtAuthentication(builder.Configuration);
-            builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
-            builder.Services.AddTransient<TServiceInterface, TService>();
-            builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
+            builder.Services.AddSingleton<IFactory<DbServiceOptions>>(
+                _ => new DbServiceOptionsFactory(new(true))
+            );
 
             builder.Services.AddTransient<IZeusMigrator, ZeusMigrator>(sp =>
                 new(
@@ -83,8 +88,6 @@ public static class WebApplicationBuilderExtension
                     sp.GetRequiredService<IMigrator>()
                 )
             );
-
-            builder.Services.AddZeusDb(name);
 
             return builder;
         }
