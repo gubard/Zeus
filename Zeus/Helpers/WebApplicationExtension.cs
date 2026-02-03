@@ -33,11 +33,8 @@ public static class WebApplicationExtension
 
         app.MapPost(
                 RouteHelper.Get,
-                async (
-                    TGetRequest request,
-                    TServiceInterface authenticationService,
-                    CancellationToken ct
-                ) => await authenticationService.GetAsync(request, ct)
+                async (TGetRequest request, TServiceInterface service, CancellationToken ct) =>
+                    await service.GetAsync(request, ct)
             )
             .RequireAuthorization()
             .WithName(RouteHelper.GetName);
@@ -46,11 +43,11 @@ public static class WebApplicationExtension
                 RouteHelper.Post,
                 async (
                     TPostRequest request,
-                    TServiceInterface authenticationService,
+                    TServiceInterface service,
                     IHttpContextAccessor accessor,
                     CancellationToken ct
                 ) =>
-                    await authenticationService.PostAsync(
+                    await service.PostAsync(
                         accessor.HttpContext.ThrowIfNull().GetIdempotentId(),
                         request,
                         ct
