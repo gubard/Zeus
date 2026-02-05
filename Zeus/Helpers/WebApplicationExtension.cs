@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Nestor.Db.Services;
 using Zeus.Services;
 
 namespace Zeus.Helpers;
@@ -20,7 +21,7 @@ public static class WebApplicationExtension
         where TServiceInterface : class,
             IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
         where TGetResponse : IValidationErrors, new()
-        where TPostResponse : IValidationErrors, new()
+        where TPostResponse : class, IValidationErrors, new()
     {
         if (app.Environment.IsDevelopment())
         {
@@ -45,13 +46,23 @@ public static class WebApplicationExtension
                     TPostRequest request,
                     TServiceInterface service,
                     IHttpContextAccessor accessor,
+                    IIdempotenceService idempotenceService,
                     CancellationToken ct
                 ) =>
-                    await service.PostAsync(
-                        accessor.HttpContext.ThrowIfNull().GetIdempotentId(),
-                        request,
-                        ct
-                    )
+                {
+                    var idempotentId = accessor.HttpContext.ThrowIfNull().GetIdempotentId();
+                    var value = await idempotenceService.GetAsync<TPostResponse>(idempotentId, ct);
+
+                    if (value is not null)
+                    {
+                        return value;
+                    }
+
+                    value = await service.PostAsync(idempotentId, request, ct);
+                    await idempotenceService.AddAsync(idempotentId, value, ct);
+
+                    return value;
+                }
             )
             .RequireAuthorization()
             .WithName(RouteHelper.PostName);

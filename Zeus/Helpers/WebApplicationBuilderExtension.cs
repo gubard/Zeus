@@ -1,4 +1,5 @@
 ﻿using System.Collections.Frozen;
+using System.Text.Json;
 using Gaia.Helpers;
 using Gaia.Models;
 using Gaia.Services;
@@ -22,12 +23,12 @@ public static class WebApplicationBuilderExtension
             TPostRequest,
             TGetResponse,
             TPostResponse
-        >(FrozenDictionary<int, string> migrations, string name)
+        >(FrozenDictionary<int, string> migrations, JsonSerializerOptions options, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
-            where TPostResponse : IValidationErrors, new()
+            where TPostResponse : class, IValidationErrors, new()
         {
             builder.AddServicesZeus<
                 TServiceInterface,
@@ -36,7 +37,7 @@ public static class WebApplicationBuilderExtension
                 TPostRequest,
                 TGetResponse,
                 TPostResponse
-            >(migrations, name);
+            >(migrations, options, name);
 
             var app = builder.Build();
 
@@ -56,7 +57,7 @@ public static class WebApplicationBuilderExtension
             TPostRequest,
             TGetResponse,
             TPostResponse
-        >(FrozenDictionary<int, string> migrations, string name)
+        >(FrozenDictionary<int, string> migrations, JsonSerializerOptions options, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
@@ -71,6 +72,7 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddZeusDb(name);
+            builder.Services.AddIdempotence(options, name);
 
             builder.Services.AddScoped<GaiaValues>(sp =>
                 sp.GetRequiredService<IHttpContextAccessor>()
