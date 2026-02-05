@@ -45,7 +45,11 @@ public sealed class IdempotenceCleanerBackgroundService : BackgroundService
                     continue;
                 }
 
-                await session.ExecuteNonQueryAsync(deleteIds.CreateDeleteIdempotentsQuery(), ct);
+                await session.ExecuteNonQueryAsync(
+                    deleteIds.CreateDeleteIdempotentsQuery(session),
+                    ct
+                );
+
                 await session.CommitAsync(ct);
             }
 
