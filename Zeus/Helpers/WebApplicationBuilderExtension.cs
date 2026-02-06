@@ -4,7 +4,6 @@ using Gaia.Helpers;
 using Gaia.Models;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Models;
 using Nestor.Db.Services;
