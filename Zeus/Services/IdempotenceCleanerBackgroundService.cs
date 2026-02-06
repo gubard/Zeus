@@ -2,6 +2,7 @@ using Gaia.Helpers;
 using Microsoft.Extensions.Hosting;
 using Nestor.Db.Helpers;
 using Nestor.Db.Models;
+using Nestor.Db.Services;
 
 namespace Zeus.Services;
 
@@ -32,8 +33,7 @@ public sealed class IdempotenceCleanerBackgroundService : BackgroundService
                 var factory = new SqliteDbConnectionFactory(file);
                 await using var session = await factory.CreateSessionAsync(ct);
                 var query = IdempotentsExt.SelectQuery;
-                await using var reader = await session.ExecuteReaderAsync(query, ct);
-                var items = await reader.ReadIdempotentsAsync(ct).ToEnumerableAsync();
+                var items = await ReadIdempotentsAsync(session, query, ct);
 
                 var deleteIds = items
                     .Where(x => DateTimeOffset.UtcNow - x.CreatedAt >= Offset)
@@ -55,5 +55,17 @@ public sealed class IdempotenceCleanerBackgroundService : BackgroundService
 
             await Task.Delay(Offset, ct);
         }
+    }
+
+    private async ValueTask<IEnumerable<IdempotentEntity>> ReadIdempotentsAsync(
+        DbSession session,
+        SqlQuery query,
+        CancellationToken ct
+    )
+    {
+        await using var reader = await session.ExecuteReaderAsync(query, ct);
+        var items = await reader.ReadIdempotentsAsync(ct).ToEnumerableAsync();
+
+        return items;
     }
 }
