@@ -73,8 +73,9 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddZeusDb(name);
             builder.Services.AddIdempotence(options, name);
+            builder.Services.AddScoped<IFactory<DbValues>, DbValuesFactory>();
 
-            builder.Services.AddScoped<GaiaValues>(sp =>
+            builder.Services.AddScoped<DbValues>(sp =>
                 sp.GetRequiredService<IHttpContextAccessor>()
                     .HttpContext.ThrowIfNull()
                     .GetRequestValues()

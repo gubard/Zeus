@@ -11,7 +11,7 @@ public static class HttpContextExtension
 {
     extension(HttpContext httpContext)
     {
-        public GaiaValues GetRequestValues()
+        public DbValues GetRequestValues()
         {
             return new(httpContext.GetTimeZoneOffset(), Guid.Parse(httpContext.GetUserId()));
         }
