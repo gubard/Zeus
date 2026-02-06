@@ -75,12 +75,6 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddIdempotence(options, name);
             builder.Services.AddScoped<IFactory<DbValues>, DbValuesFactory>();
 
-            builder.Services.AddScoped<DbValues>(sp =>
-                sp.GetRequiredService<IHttpContextAccessor>()
-                    .HttpContext.ThrowIfNull()
-                    .GetRequestValues()
-            );
-
             builder.Services.AddSingleton<IFactory<DbServiceOptions>>(
                 _ => new DbServiceOptionsFactory(new(true))
             );
