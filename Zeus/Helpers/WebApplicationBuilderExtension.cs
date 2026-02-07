@@ -4,6 +4,7 @@ using Gaia.Helpers;
 using Gaia.Models;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Nestor.Db.Models;
 using Nestor.Db.Services;
@@ -56,13 +57,17 @@ public static class WebApplicationBuilderExtension
             TPostRequest,
             TGetResponse,
             TPostResponse
-        >(FrozenDictionary<int, string> migrations, JsonSerializerOptions options, string name)
+        >(FrozenDictionary<int, string> migrations, JsonSerializerOptions jsonOptions, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : IValidationErrors, new()
         {
+            builder.WebHost.ConfigureKestrel(options =>
+                options.Limits.MaxRequestBodySize = 10 * 1024 * 1024
+            );
+
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
@@ -71,7 +76,7 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddZeusDb(name);
-            builder.Services.AddIdempotence(options, name);
+            builder.Services.AddIdempotence(jsonOptions, name);
             builder.Services.AddScoped<IFactory<DbValues>, DbValuesFactory>();
 
             builder.Services.AddSingleton<IFactory<DbServiceOptions>>(
