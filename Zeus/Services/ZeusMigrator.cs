@@ -9,11 +9,8 @@ public interface IZeusMigrator
     ConfiguredValueTaskAwaitable MigrateAsync(CancellationToken ct);
 }
 
-public class ZeusMigrator : IZeusMigrator
+public sealed class ZeusMigrator : IZeusMigrator
 {
-    private readonly DirectoryInfo _dbsDirectory;
-    private readonly IMigrator _migrator;
-
     public ZeusMigrator(DirectoryInfo dbsDirectory, IMigrator migrator)
     {
         _dbsDirectory = dbsDirectory;
@@ -24,6 +21,9 @@ public class ZeusMigrator : IZeusMigrator
     {
         return MigrateCore(ct).ConfigureAwait(false);
     }
+
+    private readonly DirectoryInfo _dbsDirectory;
+    private readonly IMigrator _migrator;
 
     private async ValueTask MigrateCore(CancellationToken ct)
     {

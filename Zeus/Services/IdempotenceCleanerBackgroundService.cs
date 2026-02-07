@@ -8,10 +8,6 @@ namespace Zeus.Services;
 
 public sealed class IdempotenceCleanerBackgroundService : BackgroundService
 {
-    private static readonly TimeSpan Offset = TimeSpan.FromDays(1);
-
-    private readonly DirectoryInfo _dbsDirectory;
-
     public IdempotenceCleanerBackgroundService(DirectoryInfo dbsDirectory)
     {
         _dbsDirectory = dbsDirectory;
@@ -56,6 +52,10 @@ public sealed class IdempotenceCleanerBackgroundService : BackgroundService
             await Task.Delay(Offset, ct);
         }
     }
+
+    private static readonly TimeSpan Offset = TimeSpan.FromDays(1);
+
+    private readonly DirectoryInfo _dbsDirectory;
 
     private async ValueTask<IEnumerable<IdempotentEntity>> ReadIdempotentsAsync(
         DbSession session,
