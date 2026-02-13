@@ -1,6 +1,6 @@
 ﻿namespace Zeus.Models;
 
-public class UserTokenClaims
+public sealed class UserTokenClaims
 {
     public string Login { get; set; } = string.Empty;
     public Guid Id { get; set; }
