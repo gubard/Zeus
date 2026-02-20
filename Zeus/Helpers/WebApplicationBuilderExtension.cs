@@ -68,6 +68,7 @@ public static class WebApplicationBuilderExtension
                 options.Limits.MaxRequestBodySize = 10 * 1024 * 1024
             );
 
+            builder.Services.AddCors(o => o.AddAllowAllPolicy());
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();

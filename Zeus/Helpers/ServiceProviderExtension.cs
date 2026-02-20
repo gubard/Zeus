@@ -1,7 +1,6 @@
 ﻿using Gaia.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nestor.Db.Models;
 using Nestor.Db.Services;
 using IServiceProvider = System.IServiceProvider;
 

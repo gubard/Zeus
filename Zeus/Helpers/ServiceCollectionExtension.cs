@@ -4,8 +4,8 @@ using Gaia.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nestor.Db.Models;
 using Nestor.Db.Services;
+using Nestor.Db.Sqlite.Services;
 using Zeus.Services;
 using JsonSerializer = Gaia.Services.JsonSerializer;
 

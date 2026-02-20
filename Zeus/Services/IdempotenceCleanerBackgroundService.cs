@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Nestor.Db.Helpers;
 using Nestor.Db.Models;
 using Nestor.Db.Services;
+using Nestor.Db.Sqlite.Services;
 
 namespace Zeus.Services;
 
