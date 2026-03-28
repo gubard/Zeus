@@ -6,6 +6,7 @@ using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nestor.Db.Models;
 using Nestor.Db.Services;
 using Zeus.Services;
@@ -72,7 +73,12 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddOpenApi();
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddTransient<IStorageService>(_ => new StorageService("Zeus"));
+
+            builder.Services.AddTransient<IStorageService>(sp => new StorageService(
+                "Zeus",
+                sp.GetRequiredService<ILogger<StorageService>>()
+            ));
+
             builder.Services.AddTransient<TServiceInterface, TService>();
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
             builder.Services.AddJwtAuthentication(builder.Configuration);
