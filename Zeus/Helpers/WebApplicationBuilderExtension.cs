@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Nestor.Db.LiteDb.Services;
 using Nestor.Db.Models;
 using Nestor.Db.Services;
 using Zeus.Services;
@@ -85,6 +86,12 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddZeusDb(name);
             builder.Services.AddIdempotence(jsonOptions, name);
             builder.Services.AddScoped<IFactory<DbValues>, DbValuesFactory>();
+
+            builder.Services.AddScoped<IDatabaseFactory>(sp => new GuidDatabaseFactory(
+                sp.GetRequiredService<IStorageService>(),
+                sp.GetRequiredService<IFactory<DbValues>>(),
+                name
+            ));
 
             builder.Services.AddSingleton<IFactory<DbServiceOptions>>(
                 _ => new DbServiceOptionsFactory(new(true))
