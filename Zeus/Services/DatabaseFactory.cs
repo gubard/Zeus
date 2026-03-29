@@ -1,53 +1,43 @@
-﻿using System.Runtime.CompilerServices;
-using Gaia.Helpers;
-using Gaia.Models;
-using Gaia.Services;
+﻿using Gaia.Services;
 using Nestor.Db.LiteDb.Services;
 using UltraLiteDB;
 
 namespace Zeus.Services;
 
-public sealed class GuidDatabaseFactory : IDatabaseFactory
+public sealed class GuidDatabaseFactory
 {
-    public GuidDatabaseFactory(
-        IStorageService storageService,
-        IFactory<DbValues> dbValuesFactory,
-        string appName
-    )
+    public GuidDatabaseFactory(IStorageService storageService, string appName)
     {
         _storageService = storageService;
-        _dbValuesFactory = dbValuesFactory;
         _appName = appName;
     }
 
-    public ConfiguredValueTaskAwaitable<IDatabase> CreateAsync(CancellationToken ct)
+    public IDatabase Create(Guid id)
     {
-        var dbValues = _dbValuesFactory.Create();
-        InitDbContext(dbValues.UserId);
+        InitDbContext(id);
 
-        return TaskHelper.FromResult(Cache[dbValues.UserId]);
+        return _cache[id];
     }
 
-    private static readonly Dictionary<Guid, IDatabase> Cache = new();
-    private readonly IFactory<DbValues> _dbValuesFactory;
+    private readonly Dictionary<Guid, IDatabase> _cache = new();
     private readonly IStorageService _storageService;
     private readonly string _appName;
 
-    private FileInfo CreateDbFile(Guid userId)
+    private FileInfo CreateDbFile(Guid id)
     {
-        return new($"{_storageService.GetDbDirectory()}/{_appName}/{userId}.litedb");
+        return new($"{_storageService.GetDbDirectory()}/{_appName}/{id}.litedb");
     }
 
-    private void InitDbContext(Guid userId)
+    private void InitDbContext(Guid id)
     {
-        if (Cache.ContainsKey(userId))
+        if (_cache.ContainsKey(id))
         {
             return;
         }
 
-        var file = CreateDbFile(userId);
+        var file = CreateDbFile(id);
         var ultra = new UltraLiteDatabase(file.FullName);
         var database = new Database(ultra);
-        Cache.Add(userId, database);
+        _cache.Add(id, database);
     }
 }

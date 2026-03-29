@@ -4,6 +4,8 @@ using Gaia.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Nestor.Db.LiteDb.Services;
 using Nestor.Db.Services;
 using Nestor.Db.Sqlite.Services;
 using Zeus.Services;
@@ -19,10 +21,12 @@ public static class ServiceCollectionExtension
         {
             serviceCollection.AddSingleton(options);
             serviceCollection.AddTransient<ISerializer, JsonSerializer>();
-            serviceCollection.AddScoped<IIdempotenceService, IdempotenceService>();
+            serviceCollection.AddScoped<IIdempotenceService, LiteDbIdempotenceService>();
 
-            serviceCollection.AddHostedService(sp => new IdempotenceCleanerBackgroundService(
-                sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name)
+            serviceCollection.AddHostedService(sp => new LiteDbIdempotenceCleanerBackgroundService(
+                sp.GetRequiredService<IStorageService>().GetDbDirectory().Combine(name),
+                sp.GetRequiredService<GuidDatabaseFactory>(),
+                sp.GetRequiredService<ILogger<LiteDbIdempotenceCleanerBackgroundService>>()
             ));
 
             return serviceCollection;

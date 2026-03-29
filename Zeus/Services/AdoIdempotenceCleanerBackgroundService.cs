@@ -7,9 +7,9 @@ using Nestor.Db.Sqlite.Services;
 
 namespace Zeus.Services;
 
-public sealed class IdempotenceCleanerBackgroundService : BackgroundService
+public sealed class AdoIdempotenceCleanerBackgroundService : BackgroundService
 {
-    public IdempotenceCleanerBackgroundService(DirectoryInfo dbsDirectory)
+    public AdoIdempotenceCleanerBackgroundService(DirectoryInfo dbsDirectory)
     {
         _dbsDirectory = dbsDirectory;
     }

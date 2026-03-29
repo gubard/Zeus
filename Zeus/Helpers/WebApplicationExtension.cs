@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Nestor.Db.Helpers;
 using Nestor.Db.Services;
 using Zeus.Services;
 
@@ -48,10 +50,12 @@ public static class WebApplicationExtension
                     TServiceInterface service,
                     IHttpContextAccessor accessor,
                     IIdempotenceService idempotenceService,
+                    ILogger<TServiceInterface> logger,
                     CancellationToken ct
                 ) =>
                 {
                     var idempotentId = accessor.HttpContext.ThrowIfNull().GetIdempotentId();
+                    logger.PostRequestId(idempotentId);
                     var value = await idempotenceService.GetAsync<TPostResponse>(idempotentId, ct);
 
                     if (value is not null)

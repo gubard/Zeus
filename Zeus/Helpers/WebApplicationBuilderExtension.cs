@@ -75,22 +75,26 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
 
-            builder.Services.AddTransient<IStorageService>(sp => new StorageService(
+            builder.Services.AddSingleton<IStorageService>(sp => new StorageService(
                 "Zeus",
                 sp.GetRequiredService<ILogger<StorageService>>()
             ));
 
             builder.Services.AddTransient<TServiceInterface, TService>();
+
+            builder.Services.AddSingleton<GuidDatabaseFactory>(sp =>
+                new(sp.GetRequiredService<IStorageService>(), name)
+            );
+
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddZeusDb(name);
             builder.Services.AddIdempotence(jsonOptions, name);
             builder.Services.AddScoped<IFactory<DbValues>, DbValuesFactory>();
 
-            builder.Services.AddScoped<IDatabaseFactory>(sp => new GuidDatabaseFactory(
-                sp.GetRequiredService<IStorageService>(),
-                sp.GetRequiredService<IFactory<DbValues>>(),
-                name
+            builder.Services.AddScoped<IDatabaseFactory>(sp => new ValueDatabaseFactory(
+                sp.GetRequiredService<GuidDatabaseFactory>()
+                    .Create(sp.GetRequiredService<IFactory<DbValues>>().Create().UserId)
             ));
 
             builder.Services.AddSingleton<IFactory<DbServiceOptions>>(
