@@ -1,4 +1,5 @@
-﻿using Gaia.Services;
+﻿using System.Collections.Concurrent;
+using Gaia.Services;
 using Nestor.Db.LiteDb.Services;
 using UltraLiteDB;
 
@@ -19,7 +20,7 @@ public sealed class GuidDatabaseFactory
         return _cache[id];
     }
 
-    private readonly Dictionary<Guid, IDatabase> _cache = new();
+    private readonly ConcurrentDictionary<Guid, IDatabase> _cache = new();
     private readonly IStorageService _storageService;
     private readonly string _appName;
 
@@ -38,6 +39,6 @@ public sealed class GuidDatabaseFactory
         var file = CreateDbFile(id);
         var ultra = new UltraLiteDatabase(file.FullName);
         var database = new Database(ultra);
-        _cache.Add(id, database);
+        _cache.TryAdd(id, database);
     }
 }

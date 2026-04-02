@@ -17,9 +17,8 @@ public static class ServiceCollectionExtension
 {
     extension(IServiceCollection serviceCollection)
     {
-        public IServiceCollection AddIdempotence(JsonSerializerOptions options, string name)
+        public IServiceCollection AddIdempotence(string name)
         {
-            serviceCollection.AddSingleton(options);
             serviceCollection.AddTransient<ISerializer, JsonSerializer>();
             serviceCollection.AddScoped<IIdempotenceService, LiteDbIdempotenceService>();
 

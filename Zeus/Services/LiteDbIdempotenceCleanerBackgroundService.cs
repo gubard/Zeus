@@ -22,49 +22,59 @@ public sealed class LiteDbIdempotenceCleanerBackgroundService : BackgroundServic
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
+        try
         {
-            if (!_dbsDirectory.Exists)
+            while (!ct.IsCancellationRequested)
             {
-                return;
-            }
-
-            var files = _dbsDirectory.GetFiles("*.litedb");
-
-            foreach (var file in files)
-            {
-                if (!Guid.TryParse(file.GetFileNameWithoutExtension(), out var id))
+                if (!_dbsDirectory.Exists)
                 {
-                    continue;
+                    return;
                 }
 
-                var database = _factory.Create(id);
+                var files = _dbsDirectory.GetFiles("*.litedb");
 
-                await database.ExecuteAsync(
-                    db =>
+                foreach (var file in files)
+                {
+                    if (!Guid.TryParse(file.GetFileNameWithoutExtension(), out var id))
                     {
-                        var collection = db.GetIdempotentEntityCollection();
+                        continue;
+                    }
 
-                        var deleteIds = collection
-                            .FindAll()
-                            .Select(x => x.ToIdempotentEntity())
-                            .Where(x => DateTimeOffset.UtcNow - x.CreatedAt >= Offset)
-                            .Select(x => x.Id)
-                            .ToArray();
+                    var database = _factory.Create(id);
 
-                        if (deleteIds.Length == 0)
+                    await database.ExecuteAsync(
+                        db =>
                         {
-                            return;
-                        }
+                            var collection = db.GetIdempotentEntityCollection();
 
-                        collection.Delete(Query.In("_id", deleteIds.Select(x => new BsonValue(x))));
-                        _logger.DeleteIdempotentEntities(id, deleteIds);
-                    },
-                    ct
-                );
+                            var deleteIds = collection
+                                .FindAll()
+                                .Select(x => x.ToIdempotentEntity())
+                                .Where(x => DateTimeOffset.UtcNow - x.CreatedAt >= Offset)
+                                .Select(x => x.Id)
+                                .ToArray();
+
+                            if (deleteIds.Length == 0)
+                            {
+                                return;
+                            }
+
+                            collection.Delete(
+                                Query.In("_id", deleteIds.Select(x => new BsonValue(x)))
+                            );
+                            _logger.DeleteIdempotentEntities(id, deleteIds);
+                        },
+                        ct
+                    );
+                }
+
+                await Task.Delay(Offset, ct);
             }
-
-            await Task.Delay(Offset, ct);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception e)
+        {
+            _logger.LogError(e, $"{nameof(AdoIdempotenceCleanerBackgroundService)} error");
         }
     }
 

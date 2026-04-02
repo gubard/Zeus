@@ -25,7 +25,11 @@ public static class WebApplicationBuilderExtension
             TPostRequest,
             TGetResponse,
             TPostResponse
-        >(FrozenDictionary<int, string> migrations, JsonSerializerOptions options, string name)
+        >(
+            FrozenDictionary<int, string> migrations,
+            string name,
+            Action<WebApplicationBuilder> configure
+        )
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
@@ -39,7 +43,9 @@ public static class WebApplicationBuilderExtension
                 TPostRequest,
                 TGetResponse,
                 TPostResponse
-            >(migrations, options, name);
+            >(migrations, name);
+
+            configure.Invoke(builder);
 
             var app = builder.Build();
 
@@ -52,6 +58,30 @@ public static class WebApplicationBuilderExtension
             >();
         }
 
+        public ValueTask CreateAndRunZeusApp<
+            TServiceInterface,
+            TService,
+            TGetRequest,
+            TPostRequest,
+            TGetResponse,
+            TPostResponse
+        >(FrozenDictionary<int, string> migrations, string name)
+            where TServiceInterface : class,
+                IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
+            where TService : class, TServiceInterface
+            where TGetResponse : IValidationErrors, new()
+            where TPostResponse : class, IValidationErrors, new()
+        {
+            return CreateAndRunZeusApp<
+                TServiceInterface,
+                TService,
+                TGetRequest,
+                TPostRequest,
+                TGetResponse,
+                TPostResponse
+            >(builder, migrations, name, FuncHelper<WebApplicationBuilder>.Empty);
+        }
+
         public WebApplicationBuilder AddServicesZeus<
             TServiceInterface,
             TService,
@@ -59,7 +89,7 @@ public static class WebApplicationBuilderExtension
             TPostRequest,
             TGetResponse,
             TPostResponse
-        >(FrozenDictionary<int, string> migrations, JsonSerializerOptions jsonOptions, string name)
+        >(FrozenDictionary<int, string> migrations, string name)
             where TServiceInterface : class,
                 IService<TGetRequest, TPostRequest, TGetResponse, TPostResponse>
             where TService : class, TServiceInterface
@@ -89,7 +119,7 @@ public static class WebApplicationBuilderExtension
             builder.Services.AddTransient<IMigrator>(_ => new Migrator(migrations));
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddZeusDb(name);
-            builder.Services.AddIdempotence(jsonOptions, name);
+            builder.Services.AddIdempotence(name);
             builder.Services.AddScoped<IFactory<DbValues>, DbValuesFactory>();
 
             builder.Services.AddScoped<IDatabaseFactory>(sp => new ValueDatabaseFactory(
