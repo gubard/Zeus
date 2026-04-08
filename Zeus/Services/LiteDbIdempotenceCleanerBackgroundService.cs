@@ -74,7 +74,7 @@ public sealed class LiteDbIdempotenceCleanerBackgroundService : BackgroundServic
         catch (OperationCanceledException) { }
         catch (Exception e)
         {
-            _logger.LogError(e, $"{nameof(AdoIdempotenceCleanerBackgroundService)} error");
+            _logger.LogError(e, $"{nameof(LiteDbIdempotenceCleanerBackgroundService)} error");
         }
     }
 
