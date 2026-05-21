@@ -4,6 +4,7 @@ using Gaia.Models;
 using Gaia.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nestor.Db.LiteDb.Services;
@@ -35,6 +36,9 @@ public static class WebApplicationBuilderExtension
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : class, IValidationErrors, new()
         {
+            builder.Configuration.Sources.Clear();
+            builder.Configuration.AddJsonFile("appsettings.json");
+
             builder.AddServicesZeus<
                 TServiceInterface,
                 TService,
