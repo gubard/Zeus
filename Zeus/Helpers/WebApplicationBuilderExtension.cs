@@ -36,9 +36,6 @@ public static class WebApplicationBuilderExtension
             where TGetResponse : IValidationErrors, new()
             where TPostResponse : class, IValidationErrors, new()
         {
-            builder.Configuration.Sources.Clear();
-            builder.Configuration.AddJsonFile("appsettings.json");
-
             builder.AddServicesZeus<
                 TServiceInterface,
                 TService,
