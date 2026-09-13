@@ -36,7 +36,7 @@ public sealed class ZeusMigrator : IZeusMigrator
 
         foreach (var file in files)
         {
-            var factory = new SqliteDbConnectionFactory(file);
+            var factory = new AdoDatabase(new FileSqliteDbConnectionFactory(file));
             await _migrator.MigrateAsync(factory, ct);
         }
     }

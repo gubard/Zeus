@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Gaia.Services;
 using Nestor.Db.LiteDb.Services;
+using Nestor.Db.Services;
 using UltraLiteDB;
 
 namespace Zeus.Services;
@@ -13,14 +14,14 @@ public sealed class GuidDatabaseFactory
         _appName = appName;
     }
 
-    public IDatabase Create(Guid id)
+    public IDatabase<UltraLiteDatabase> Create(Guid id)
     {
         InitDbContext(id);
 
         return _cache[id];
     }
 
-    private readonly ConcurrentDictionary<Guid, IDatabase> _cache = new();
+    private readonly ConcurrentDictionary<Guid, IDatabase<UltraLiteDatabase>> _cache = new();
     private readonly IStorageService _storageService;
     private readonly string _appName;
 
